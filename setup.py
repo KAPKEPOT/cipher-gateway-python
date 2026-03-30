@@ -4,7 +4,7 @@ setup(
     name="cipher-gateway",
     version="1.0.0",
     description="Python SDK for the Cipher MT5 Gateway",
-    author="CipherTrade",
+    author="CipherBridge",
     packages=find_packages(),
     python_requires=">=3.10",
     install_requires=[
