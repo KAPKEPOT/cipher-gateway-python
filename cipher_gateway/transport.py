@@ -1,7 +1,7 @@
 # cipher_gateway/transport.py
 """
 Low-level HTTP transport.
-Handles all requests, auth headers, and error mapping.
+Handles all requests, auth headers, and HTTP-status → exception mapping.
 Not used directly — use CipherGatewayClient instead.
 """
 import logging
@@ -13,6 +13,7 @@ from .models import GatewayConfig
 from .exceptions import (
     AuthenticationError,
     CipherGatewayError,
+    GatewayConnectionError,
     GatewayResponseError,
     NotStartedError,
 )
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 class HttpTransport:
     """
     Thin async HTTP wrapper around httpx.
-    Handles auth header injection and error mapping.
+    Handles auth-header injection and HTTP-status → exception mapping.
     """
 
     def __init__(self, config: GatewayConfig):
@@ -54,7 +55,7 @@ class HttpTransport:
     def _ensure_started(self):
         if not self._client:
             raise NotStartedError(
-                "Client not started — call start() or use async with"
+                "Client not started — call start() or use 'async with'"
             )
 
     async def get(self, path: str) -> Any:
@@ -63,7 +64,7 @@ class HttpTransport:
             r = await self._client.get(path, headers=self._headers())
             return self._handle(r)
         except httpx.RequestError as e:
-            raise CipherGatewayError(f"Request failed: {e}") from e
+            raise GatewayConnectionError(f"GET {path} failed: {e}") from e
 
     async def post(self, path: str, json: Optional[Dict] = None) -> Any:
         self._ensure_started()
@@ -73,7 +74,7 @@ class HttpTransport:
             )
             return self._handle(r)
         except httpx.RequestError as e:
-            raise CipherGatewayError(f"Request failed: {e}") from e
+            raise GatewayConnectionError(f"POST {path} failed: {e}") from e
 
     async def delete(self, path: str) -> Any:
         self._ensure_started()
@@ -81,35 +82,45 @@ class HttpTransport:
             r = await self._client.delete(path, headers=self._headers())
             return self._handle(r)
         except httpx.RequestError as e:
-            raise CipherGatewayError(f"Request failed: {e}") from e
+            raise GatewayConnectionError(f"DELETE {path} failed: {e}") from e
 
     def _handle(self, response: httpx.Response) -> Any:
-        """Map HTTP status codes to SDK exceptions"""
-        if response.status_code == 200 or response.status_code == 201:
+        """Map HTTP status codes to SDK exceptions."""
+        code = response.status_code
+
+        # Success
+        if code in (200, 201):
             try:
                 return response.json()
             except Exception:
                 return {}
 
-        if response.status_code == 401:
+        # 204 No Content — success with empty body
+        if code == 204:
+            return {}
+
+        # Auth failure
+        if code == 401:
             raise AuthenticationError("Invalid or missing API key")
 
-        if response.status_code == 404:
-            raise GatewayResponseError(
-                "Resource not found",
-                status_code=404,
-                raw=response.text,
+        if code == 403:
+            raise AuthenticationError("Permission denied — check API key scope")
+
+        if code == 404:
+            from .exceptions import AccountNotFoundError
+            raise AccountNotFoundError(
+                f"Resource not found (404): {response.url.path}"
             )
 
-        # Strip HTML error pages (nginx, etc.) before surfacing to user
+        # Strip HTML error pages (nginx/proxy) before surfacing to user
         raw = response.text
-        if '<html>' in raw.lower():
-            detail = f"HTTP {response.status_code} — gateway/proxy error"
+        if "<html>" in raw.lower():
+            detail = f"HTTP {code} — gateway/proxy error (see raw for details)"
         else:
-            detail = raw[:200]
+            detail = raw[:300]
 
         raise GatewayResponseError(
             detail,
-            status_code=response.status_code,
+            status_code=code,
             raw=raw,
         )

@@ -11,13 +11,13 @@ from typing import Optional, Dict, Any
 
 @dataclass
 class GatewayConfig:
-    """Gateway connection configuration"""
-    host: str = "localhost"
-    port: int = 8080
+    """Gateway connection configuration."""
+    host: str  = "localhost"
+    port: int  = 8080
     use_ssl: bool = False
-    api_key_header: str = "X-API-Key"
-    connect_timeout: float = 10.0
-    request_timeout: float = 30.0
+    api_key_header: str   = "X-API-Key"
+    connect_timeout: float  = 10.0
+    request_timeout: float  = 30.0
     ws_reconnect_delay: float = 5.0
     max_reconnect_attempts: int = 5
 
@@ -37,8 +37,10 @@ class GatewayConfig:
 @dataclass
 class UserCredentials:
     """
-    Returned by create_user().
-    Store gateway_user_id and api_key — that's all the bot needs.
+    Returned by :meth:`CipherGatewayClient.create_user`.
+
+    Store both fields in your database — they identify the user to the
+    gateway for all future requests.
     """
     gateway_user_id: str
     api_key: str
@@ -47,8 +49,10 @@ class UserCredentials:
 @dataclass
 class AccountCredentials:
     """
-    Returned by create_account().
-    Store account_id — paired with api_key this routes all future requests.
+    Returned by :meth:`CipherGatewayClient.create_account`.
+
+    ``account_id`` is the only identifier you need for trading.
+    MT5 login / password / server are never needed again after provisioning.
     """
     account_id: str
     auth_token: Optional[str] = None
@@ -58,7 +62,7 @@ class AccountCredentials:
 
 @dataclass
 class AccountInfo:
-    """MT5 account information"""
+    """Live MT5 account information."""
     login: int
     name: str
     server: str
@@ -72,6 +76,7 @@ class AccountInfo:
 
     @property
     def margin_level(self) -> float:
+        """Margin level in percent. Returns 0 if equity is zero."""
         return (self.margin / self.equity * 100) if self.equity > 0 else 0.0
 
     @classmethod
@@ -94,7 +99,7 @@ class AccountInfo:
 
 @dataclass
 class Position:
-    """Open trading position"""
+    """An open trading position."""
     ticket: int
     symbol: str
     side: str       # 'buy' or 'sell'
@@ -121,8 +126,8 @@ class Position:
             profit=float(data.get('profit', 0)),
             swap=float(data.get('swap', 0)),
             commission=float(data.get('commission', 0)),
-            sl=float(data['sl']) if data.get('sl') else None,
-            tp=float(data['tp']) if data.get('tp') else None,
+            sl=float(data['sl'])  if data.get('sl')  else None,
+            tp=float(data['tp'])  if data.get('tp')  else None,
             open_time=data.get('openTime'),
             comment=data.get('comment', ''),
         )
@@ -130,7 +135,7 @@ class Position:
 
 @dataclass
 class OrderResult:
-    """Result of a placed, closed or modified order"""
+    """Result of a placed, closed, or modified order."""
     ticket: int
     success: bool
     error: Optional[str] = None
@@ -148,7 +153,7 @@ class OrderResult:
 
 @dataclass
 class Quote:
-    """Real-time bid/ask quote"""
+    """Real-time bid/ask quote."""
     symbol: str
     bid: float
     ask: float
@@ -165,7 +170,7 @@ class Quote:
 
 @dataclass
 class Tick:
-    """Raw tick data"""
+    """Raw tick data (bid, ask, last, volume, timestamp)."""
     symbol: str
     bid: float
     ask: float
@@ -176,7 +181,7 @@ class Tick:
 
 @dataclass
 class Candle:
-    """OHLCV candle"""
+    """OHLCV candle."""
     symbol: str
     timeframe: str
     time: int
@@ -190,7 +195,7 @@ class Candle:
 
 @dataclass
 class SymbolPrice:
-    """Current price for a symbol"""
+    """Current bid/ask snapshot for a symbol."""
     symbol: str
     bid: float
     ask: float

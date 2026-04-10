@@ -1,57 +1,76 @@
 # cipher_gateway/exceptions.py
 """
-CipherGateway SDK exceptions.
-Standalone — no dependencies on the bot application.
+CipherGateway SDK exception hierarchy.
+All exceptions inherit from CipherGatewayError for easy catch-all handling.
+
+    try:
+        await client.wait_for_active(account_id)
+    except AccountLoginFailedError as e:
+        print(f"Wrong credentials: {e}")
+    except CipherGatewayError as e:
+        print(f"Gateway error: {e}")
 """
 
 
 class CipherGatewayError(Exception):
-    """Base exception for all SDK errors"""
+    """Base exception for all SDK errors. Catch this for a catch-all."""
     pass
 
 
 class NotStartedError(CipherGatewayError):
-    """Client used before start() was called"""
+    """Client was used before start() was called (or outside async with block)."""
     pass
 
 
 class AuthenticationError(CipherGatewayError):
-    """Invalid or missing API key"""
+    """API key is missing, invalid, or has been revoked."""
     pass
 
 
 class AccountNotFoundError(CipherGatewayError):
-    """Account ID does not exist on gateway"""
+    """The given account_id does not exist on the gateway."""
     pass
 
 
 class AccountLoginFailedError(CipherGatewayError):
-    """MT5 credentials were rejected by the broker"""
+    """MT5 credentials were rejected by the broker."""
     pass
 
 
 class AccountTimeoutError(CipherGatewayError):
-    """Account did not become active within the timeout"""
+    """Account did not reach 'active' status within the timeout."""
     pass
 
 
 class OrderError(CipherGatewayError):
-    """Order placement, modification or close failed"""
+    """Order placement, modification, or close failed."""
     pass
 
 
-class ConnectionError(CipherGatewayError):
-    """HTTP or WebSocket connection to gateway failed"""
+class GatewayConnectionError(CipherGatewayError):
+    """
+    HTTP or WebSocket connection to the gateway failed.
+
+    Named GatewayConnectionError (not ConnectionError) to avoid shadowing
+    Python's built-in builtins.ConnectionError, which is a subclass of OSError
+    and used by socket/network code throughout the stdlib.
+    """
     pass
 
 
 class SubscriptionError(CipherGatewayError):
-    """WebSocket market data subscription failed"""
+    """WebSocket market-data subscription failed or timed out."""
     pass
 
 
 class GatewayResponseError(CipherGatewayError):
-    """Gateway returned an unexpected or malformed response"""
+    """
+    Gateway returned an unexpected or malformed HTTP response.
+
+    Attributes:
+        status_code: The HTTP status code (e.g. 500).
+        raw:         The raw response body (truncated for HTML error pages).
+    """
     def __init__(self, message: str, status_code: int = 0, raw: str = ""):
         super().__init__(message)
         self.status_code = status_code
