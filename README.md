@@ -42,13 +42,13 @@ pip install cipher-gateway
 Or install the latest development version directly from GitHub:
 
 ```bash
-pip install git+https://github.com/ciphertrade/cipher-gateway-python.git
+pip install git+https://github.com/cipher-suite/cipher-gateway-python.git
 ```
 
 Or clone and install locally for development:
 
 ```bash
-git clone https://github.com/ciphertrade/cipher-gateway-python.git
+git clone https://github.com/cipher-suite/cipher-gateway-python.git
 cd cipher-gateway-python
 pip install -e ".[dev]"
 ```
