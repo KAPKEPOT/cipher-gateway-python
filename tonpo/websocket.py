@@ -26,7 +26,7 @@ class WebSocketClient:
     Not used directly — access via TonpoClient.ws or subscribe().
     """
 
-    def __init__(self, config: GatewayConfig, api_key: Optional[str] = None):
+    def __init__(self, config: TonpoConfig, api_key: Optional[str] = None):
         self._config = config
         self._api_key = api_key
         self._connection: Optional[websockets.WebSocketClientProtocol] = None
@@ -113,7 +113,7 @@ class WebSocketClient:
                 if self._reconnect_attempts < self._config.max_reconnect_attempts:
                     await asyncio.sleep(self._config.ws_reconnect_delay)
                 else:
-                    raise GatewayConnectionError(
+                    raise TonpoConnectionError(
                         f"WebSocket connection failed after "
                         f"{self._config.max_reconnect_attempts} attempts"
                     ) from exc
