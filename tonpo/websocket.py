@@ -124,7 +124,7 @@ class WebSocketClient:
         try:
             async for message in self._connection:
                 await self._dispatch(message)
-        except ConnectionClosed:
+        except ConnectionClosed as exc:
             logger.warning("WebSocket closed (code: %s) — scheduling reconnect", exc.rcvd_then)
             self._connected = False
             if not self._reconnect_task or self._reconnect_task.done():
