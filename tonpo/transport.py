@@ -9,14 +9,13 @@ from typing import Any, Dict, Optional
 
 import httpx
 
-from .models import TonpoConfig
 from .exceptions import (
     AuthenticationError,
-    TonpoError,
+    NotStartedError,
     TonpoConnectionError,
     TonpoResponseError,
-    NotStartedError,
 )
+from .models import TonpoConfig
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,6 @@ class HttpTransport:
             return self._handle(r)
         except httpx.RequestError as e:
             raise TonpoConnectionError(f"DELETE {path} failed: {e}") from e
-            
     async def patch(self, path: str, json: Optional[Dict] = None) -> Any:
         """Send a PATCH request."""
         self._ensure_started()
@@ -94,7 +92,7 @@ class HttpTransport:
             return self._handle(r)
         except httpx.RequestError as e:
             raise TonpoConnectionError(f"PATCH {path} failed: {e}") from e
-            
+    
     def _handle(self, response: httpx.Response) -> Any:
         """Map HTTP status codes to SDK exceptions."""
         code = response.status_code
