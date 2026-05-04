@@ -12,10 +12,9 @@ import httpx
 from .models import TonpoConfig
 from .exceptions import (
     AuthenticationError,
-    TonpoError,
+    NotStartedError,
     TonpoConnectionError,
     TonpoResponseError,
-    NotStartedError,
 )
 
 logger = logging.getLogger(__name__)

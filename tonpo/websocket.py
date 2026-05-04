@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Callable, Dict, List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
 
 import websockets
 from websockets.exceptions import ConnectionClosed

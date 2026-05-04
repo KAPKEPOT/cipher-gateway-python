@@ -4,10 +4,10 @@ Tonpo SDK data models.
 All data returned from the gateway is typed through these classes.
 """
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
-# ==================== Configuration ====================
+# Configuration 
 
 @dataclass
 class TonpoConfig:
@@ -32,8 +32,7 @@ class TonpoConfig:
         return f"{protocol}://{self.host}:{self.port}/ws"
 
 
-# ==================== Auth ====================
-
+# Auth
 @dataclass
 class UserCredentials:
     """
@@ -58,8 +57,7 @@ class AccountCredentials:
     auth_token: Optional[str] = None
 
 
-# ==================== Account ====================
-
+# Account 
 @dataclass
 class AccountInfo:
     """Live MT5 account information."""
@@ -95,8 +93,7 @@ class AccountInfo:
         )
 
 
-# ==================== Trading ====================
-
+# Trading
 @dataclass
 class Position:
     """An open trading position."""
@@ -149,8 +146,7 @@ class OrderResult:
         )
 
 
-# ==================== Market Data ====================
-
+# Market Data
 @dataclass
 class Quote:
     """Real-time bid/ask quote."""
