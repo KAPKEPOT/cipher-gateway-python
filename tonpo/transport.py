@@ -92,7 +92,7 @@ class HttpTransport:
             return self._handle(r)
         except httpx.RequestError as e:
             raise TonpoConnectionError(f"PATCH {path} failed: {e}") from e
-    
+
     def _handle(self, response: httpx.Response) -> Any:
         """Map HTTP status codes to SDK exceptions."""
         code = response.status_code
