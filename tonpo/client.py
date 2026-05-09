@@ -20,7 +20,7 @@ Two usage patterns:
 import asyncio
 import logging
 import time
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from .exceptions import (
     AccountLoginFailedError,
